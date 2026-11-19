@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0b1220">
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="تقرير الإنتاج V10">
+
+<title>تقرير الإنتاج بالساعة V10</title>
+<style>
+:root {
+  --bg: #0b1220;
+  --card: #131e30;
+  --card-inner: #0d1624;
+  --input: #080f1a;
+  --text: #f8fafc;
+  --muted: #94a3b8;
+  --line: #24344d;
+  --accent: #10b981;
+  --blue: #3b82f6;
+  --danger: #ef4444;
+  --warn: #f59e0b;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Tahoma, sans-serif;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+body {
+  padding: 8px;
+}
+
+.top-bar {
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 10px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.row-between {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.pills {
+  display: flex;
+  gap: 3px;
+  background: var(--input);
+  padding: 3px;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+}
+
+.pills button {
+  background: transparent;
+  color: var(--muted);
+  border: none;
+  padding: 6px 11px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pills button.active { background: var(--accent); color: #052e16; }
+.pills button.active-blue { background: var(--blue); color: #fff; }
+
+.plant-summary {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  background: var(--input);
+  padding: 10px 6px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  text-align: center;
+}
+
+.plant-summary div span { display: block; font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.plant-summary div b { font-size: 20px; color: var(--accent); }
+.plant-summary div:nth-child(2) b { color: var(--blue); }
+.plant-summary div:nth-child(3) b { color: var(--danger); }
+
+.btn {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-accent { background: var(--accent); color: #052e16; }
+.btn-blue { background: var(--blue); color: #fff; }
+.btn-dark { background: #1e293b; color: var(--text); border: 1px solid var(--line); }
+.btn-danger { background: #451a1a; color: #fca5a5; border: 1px solid #7f1d1d; }
+.btn-warn { background: #452709; color: #fcd34d; border: 1px solid #78350f; }
+.btn-sm { padding: 6px 10px; font-size: 12.5px; border-radius: 8px; }
+
+.lines-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+}
+
+@media (min-width: 980px) {
+  .lines-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.line-card {
+  width: 100%;
+  background: var(--card);
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.line-card.locked { border-color: var(--accent); }
+.line-card.paused { opacity: 0.72; }
+
+.line-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 9px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.line-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #1d4ed8, #2563eb);
+  color: #ffffff;
+  border: 1px solid #60a5fa;
+  border-radius: 10px;
+  padding: 6px 14px;
+  font-weight: 900;
+  font-size: 18px;
+  letter-spacing: 0.3px;
+  direction: ltr;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+}
+
+.size-btns { display: flex; gap: 4px; flex-wrap: wrap; }
+.size-btns button {
+  background: var(--input);
+  color: var(--muted);
+  border: 1px solid var(--line);
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.size-btns button.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+.product-row {
+  width: 100%;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/* شريط السلايتات المحفوظة للمنتجات */
+.slides-bar {
+  width: 100%;
+  background: var(--card-inner);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.slides-title {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 700;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.slides-strip {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 3px;
+  scrollbar-width: thin;
+}
+
+.slide-chip {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.slide-chip.active-slide {
+  background: #172554;
+  border-color: var(--blue);
+  color: #93c5fd;
+}
+
+.slide-del {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1;
+  padding: 0 2px;
+}
+
+.slide-del:hover {
+  color: #fca5a5;
+}
+
+.input-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.field label { font-size: 12.5px; color: var(--muted); font-weight: 700; }
+
+input {
+  width: 100%;
+  min-width: 0;
+  background: var(--input);
+  border: 1px solid var(--line);
+  color: var(--text);
+  border-radius: 9px;
+  padding: 9px 6px;
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+}
+input:focus { outline: none; border-color: var(--accent); }
+input:disabled { opacity: 0.55; }
+
+.quick {
+  display: flex;
+  gap: 4px;
+}
+.quick button {
+  flex: 1;
+  min-width: 0;
+  background: #1e293b;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 7px 0;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.quick button:active { background: var(--blue); }
+
+.line-stats {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  background: var(--input);
+  padding: 8px 4px;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+  text-align: center;
+  font-size: 12px;
+}
+.line-stats span { display: block; color: var(--muted); }
+.line-stats b { font-size: 16px; display: block; margin-top: 2px; }
+
+.hfi-release-box {
+  width: 100%;
+  background: #1b160c;
+  border: 1px solid #78350f;
+  border-radius: 10px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.hfi-release-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+}
+.hfi-release-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  align-items: center;
+}
+
+.products-breakdown {
+  width: 100%;
+  background: var(--card-inner);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.breakdown-title {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 700;
+  display: flex;
+  justify-content: space-between;
+}
+.prod-item {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  cursor: pointer;
+}
+.prod-item.current-prod {
+  border-color: var(--blue);
+}
+.prod-item.closed-prod {
+  border-color: #78350f;
+  background: #1a150e;
+}
+.prod-name {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text);
+}
+.prod-size {
+  font-size: 11px;
+  color: var(--blue);
+  background: #172554;
+  padding: 2px 6px;
+  border-radius: 5px;
+  margin-right: 4px;
+}
+.closed-badge {
+  font-size: 10px;
+  color: #fcd34d;
+  background: #452709;
+  padding: 2px 6px;
+  border-radius: 5px;
+  margin-right: 4px;
+}
+.prod-nums {
+  display: flex;
+  gap: 10px;
+  font-size: 12px;
+  direction: ltr;
+}
+.prod-nums b { font-size: 13px; }
+
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 99;
+  padding: 12px;
+  align-items: center;
+  justify-content: center;
+}
+.modal-box {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px;
+  width: 100%;
+  max-width: 540px;
+  max-height: 88vh;
+  overflow-y: auto;
+}
+textarea {
+  width: 100%;
+  height: 260px;
+  background: var(--input);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 10px;
+  direction: ltr;
+  font-family: monospace;
+  font-size: 12.5px;
+  margin: 10px 0;
+}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="row-between">
+    <div class="pills" id="teamPills">
+      <button type="button" onclick="setTeam('Green')">Green</button>
+      <button type="button" onclick="setTeam('Blue')">Blue</button>
+      <button type="button" onclick="setTeam('Red')">Red</button>
+    </div>
+
+    <div class="pills" id="periodPills">
+      <button type="button" onclick="setPeriod('Morning')">Morning</button>
+      <button type="button" onclick="setPeriod('Night')">Night</button>
+    </div>
+
+    <button type="button" class="btn btn-dark btn-sm" onclick="toggleLineCount()">الخطوط: <span id="lineCountLbl">2</span></button>
+  </div>
+
+  <div class="plant-summary">
+    <div><span>إجمالي المصنع</span><b id="plantTotal">0</b></div>
+    <div><span>الجيد (Good)</span><b id="plantGood">0</b></div>
+    <div><span>HFI تحت الفرز</span><b id="plantHfi">0</b></div>
+  </div>
+
+  <div class="row-between">
+    <button type="button" class="btn btn-blue" style="flex:2" onclick="sendHourlyWA()">📤 إرسال تقرير الساعة</button>
+    <button type="button" class="btn btn-dark" style="flex:1" onclick="startNextHour()">🔄 ساعة جديدة</button>
+  </div>
+  <div class="row-between">
+    <button type="button" class="btn btn-danger" style="flex:2" onclick="openEndShift()">🏁 ختام الشيفت</button>
+    <button type="button" class="btn btn-dark" style="flex:1" onclick="openHistory()">📂 الأرشيف</button>
+  </div>
+</div>
+
+<div class="lines-grid" id="linesContainer"></div>
+
+<div class="modal" id="endModal">
+  <div class="modal-box">
+    <div class="row-between">
+      <b style="font-size:16px">تقرير ختام الشيفت</b>
+      <button type="button" class="btn btn-dark btn-sm" onclick="closeModal('endModal')">✕</button>
+    </div>
+    <textarea id="endReportText" readonly></textarea>
+    <div class="row-between">
+      <button type="button" class="btn btn-blue" style="flex:1" onclick="copyReport()">📋 نسخ</button>
+      <button type="button" class="btn btn-accent" style="flex:1" onclick="sendEndWA()">📤 واتساب</button>
+      <button type="button" class="btn btn-danger" style="flex:1" onclick="archiveAndReset()">🗑️ أرشفة وتصفير</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="historyModal">
+  <div class="modal-box">
+    <div class="row-between">
+      <b style="font-size:16px">سجل الشيفتات السابقة</b>
+      <button type="button" class="btn btn-dark btn-sm" onclick="closeModal('historyModal')">✕</button>
+    </div>
+    <div id="historyContent" style="margin-top:10px; font-size:13px;"></div>
+  </div>
+</div>
+
+<datalist id="prodList"></datalist>
+
+<script>
+const DB_KEY = 'fastProdV10_line_sizes_slides';
+const LINE_SIZES = {
+  1: ['250ml', '300ml'],
+  2: ['300ml', '330ml', '355ml'],
+  3: ['250ml', '300ml', '330ml', '355ml'],
+  4: ['250ml', '300ml', '330ml', '355ml']
+};
+
+function getSizesForLine(lineId) {
+  return LINE_SIZES[lineId] || ['250ml', '300ml', '330ml', '355ml'];
+}
+
+const createLine = (id) => {
+  const sizes = getSizesForLine(id);
+  return {
+    id,
+    displayLabel: `Line ${id}`,
+    waLabel: `Line#${String(id).padStart(2, '0')}`,
+    size: sizes[0],
+    product: '',
+    total: 0,
+    hfiPending: 0,
+    hfiReleased: 0,
+    draftHr: '',
+    draftHfi: '',
+    active: true,
+    locked: false,
+    lastHr: 0,
+    lastHfi: 0,
+    lastKey: '',
+    products: {},
+    productChanges: []
+  };
+};
+
+function getLineGood(l) {
+  return Math.max(0, (l.total || 0) - (l.hfiPending || 0));
+}
+
+function normalizeLoadedDB(parsed) {
+  if (!parsed || !Array.isArray(parsed.lines) || !parsed.lines.length) {
+    return {
+      team: 'Green',
+      period: 'Morning',
+      lines: [createLine(1), createLine(2)],
+      savedProducts: [],
+      history: []
+    };
+  }
+  parsed.lines.forEach((l, i) => {
+    const lid = l.id || (i + 1);
+    l.id = lid;
+    l.displayLabel = `Line ${lid}`;
+    l.waLabel = `Line#${String(lid).padStart(2, '0')}`;
+    const allowed = getSizesForLine(lid);
+    if (!allowed.includes(l.size)) {
+      l.size = allowed[0];
+    }
+  });
+  parsed.savedProducts = Array.isArray(parsed.savedProducts) ? parsed.savedProducts : [];
+  parsed.history = Array.isArray(parsed.history) ? parsed.history : [];
+  return parsed;
+}
+
+function loadDB() {
+  try {
+    const raw = localStorage.getItem(DB_KEY);
+    if (raw) return normalizeLoadedDB(JSON.parse(raw));
+  } catch (_) {}
+  return normalizeLoadedDB(null);
+}
+
+let db = loadDB();
+
+function save() {
+  try {
+    localStorage.setItem(DB_KEY, JSON.stringify(db));
+  } catch (_) {}
+  updateTopBar();
+}
+
+function saveProductSlide(name) {
+  const clean = (name || '').trim();
+  if (!clean) return;
+  db.savedProducts = db.savedProducts.filter(p => p !== clean);
+  db.savedProducts.unshift(clean);
+  if (db.savedProducts.length > 30) db.savedProducts.length = 30;
+}
+
+function deleteSlide(slideName, event) {
+  if (event) event.stopPropagation();
+  db.savedProducts = db.savedProducts.filter(p => p !== slideName);
+  save();
+  render();
+}
+
+function applySlide(idx, slideName) {
+  if (db.lines[idx].locked) return;
+  db.lines[idx].product = slideName;
+  saveProductSlide(slideName);
+  save();
+  render();
+}
+
+function setTeam(t) { db.team = t; save(); }
+function setPeriod(p) { db.period = p; save(); }
+
+function toggleLineCount() {
+  const next = db.lines.length >= 4 ? 1 : db.lines.length + 1;
+  if (next < db.lines.length && db.lines[db.lines.length - 1].total > 0) {
+    if (!confirm('الخط الأخير به إنتاج، هل تريد حذفه؟')) return;
+  }
+  while (db.lines.length < next) db.lines.push(createLine(db.lines.length + 1));
+  while (db.lines.length > next) db.lines.pop();
+  save();
+  render();
+}
+
+function updateTopBar() {
+  document.querySelectorAll('#teamPills button').forEach(b => {
+    b.className = b.textContent === db.team ? 'active-blue' : '';
+  });
+  document.querySelectorAll('#periodPills button').forEach(b => {
+    b.className = b.textContent === db.period ? 'active' : '';
+  });
+  document.getElementById('lineCountLbl').textContent = db.lines.length;
+
+  const t = db.lines.reduce((acc, l) => ({
+    total: acc.total + (l.total || 0),
+    hfiPending: acc.hfiPending + (l.hfiPending || 0),
+    good: acc.good + getLineGood(l)
+  }), { total: 0, hfiPending: 0, good: 0 });
+
+  document.getElementById('plantTotal').textContent = t.total;
+  document.getElementById('plantGood').textContent = t.good;
+  document.getElementById('plantHfi').textContent = t.hfiPending;
+
+  document.getElementById('prodList').innerHTML =
+    db.savedProducts.map(p => `<option value="${p.replace(/"/g, '&quot;')}">`).join('');
+}
+
+function getProdKey(name, size) {
+  return `${(name || 'General').trim()}__${size}`;
+}
+
+function padHfi(num) {
+  const n = Math.max(0, parseInt(num, 10) || 0);
+  return n < 10 ? `0${n}` : `${n}`;
+}
+
+function render() {
+  const container = document.getElementById('linesContainer');
+  container.innerHTML = db.lines.map((l, idx) => {
+    const lineId = l.id || (idx + 1);
+    const lineTitle = l.displayLabel || `Line ${lineId}`;
+    const sizes = getSizesForLine(lineId);
+    if (!sizes.includes(l.size)) l.size = sizes[0];
+
+    const activeKey = getProdKey(l.product, l.size);
+    const prodEntries = Object.entries(l.products || {});
+    const lineGood = getLineGood(l);
+
+    const slidesHtml = db.savedProducts.length
+      ? `<div class="slides-strip">${db.savedProducts.map(p => {
+          const isSelected = (l.product || '').trim() === p;
+          const safeArg = p.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+          return `
+            <button type="button" class="slide-chip ${isSelected ? 'active-slide' : ''}" onclick="applySlide(${idx}, '${safeArg}')">
+              <span>${p}</span>
+              <span class="slide-del" title="حذف السلايت" onclick="deleteSlide('${safeArg}', event)">✕</span>
+            </button>
+          `;
+        }).join('')}</div>`
+      : `<div style="font-size:12px; color:var(--muted);">اكتب اسم أي منتج ليتم حفظه تلقائياً كسلايت سريع هنا.</div>`;
+
+    const prodCards = prodEntries.map(([key, d]) => {
+      const isCurrent = key === activeKey && !d.closed;
+      const good = Math.max(0, (d.total || 0) - (d.hfiPending || 0));
+      const safeName = d.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      return `
+        <div class="prod-item ${isCurrent ? 'current-prod' : ''} ${d.closed ? 'closed-prod' : ''}" onclick="selectExistingProd(${idx}, '${safeName}', '${d.size}')">
+          <div>
+            <span class="prod-name">${d.name}</span>
+            <span class="prod-size">${d.size}</span>
+            ${d.closed ? '<span class="closed-badge">مقفل</span>' : ''}
+          </div>
+          <div class="prod-nums">
+            <span>Tot: <b>${d.total}</b></span>
+            <span style="color:var(--accent)">Good: <b>${good}</b></span>
+            <span style="color:var(--danger)">HFI: <b>${d.hfiPending || 0}</b></span>
+            ${d.hfiReleased > 0 ? `<span style="color:var(--warn)">Rel: <b>${d.hfiReleased}</b></span>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    const hfiBox = ((l.hfiPending || 0) > 0 || (l.hfiReleased || 0) > 0) ? `
+      <div class="hfi-release-box">
+        <div class="hfi-release-top">
+          <span>⚠️ HFI تحت الفرز: <b style="color:var(--danger)">${l.hfiPending || 0}</b></span>
+          <span>✅ تم فرزه إلى Good: <b style="color:var(--accent)">${l.hfiReleased || 0}</b></span>
+        </div>
+        ${(l.hfiPending || 0) > 0 ? `
+          <div class="hfi-release-actions">
+            <button type="button" class="btn btn-warn btn-sm" onclick="releaseOneHfi(${idx})">تم فرزه (+1)</button>
+            <button type="button" class="btn btn-accent btn-sm" onclick="releaseAllHfi(${idx})">تم فرز الكل (${l.hfiPending})</button>
+          </div>
+        ` : ''}
+      </div>
+    ` : '';
+
+    return `
+    <div class="line-card ${l.locked ? 'locked' : ''} ${!l.active ? 'paused' : ''}">
+      <div class="line-header">
+        <span class="line-badge">⚡ ${lineTitle}</span>
+        <div class="size-btns">
+          ${sizes.map(s => `<button type="button" class="${l.size === s ? 'active' : ''}" onclick="setSize(${idx}, '${s}')">${s}</button>`).join('')}
+        </div>
+        <button type="button" class="btn btn-dark btn-sm" onclick="toggleActive(${idx})">${l.active ? '🟢 شغال' : '🔴 متوقف'}</button>
+      </div>
+
+      <div class="product-row">
+        <input type="text" id="prod_${idx}" list="prodList" placeholder="اكتب اسم المنتج هنا (يحفظ كسلايت)..."
+          value="${l.product.replace(/"/g, '&quot;')}" onchange="setProduct(${idx}, this.value)" style="text-align:right; flex:1;">
+        <button type="button" class="btn btn-warn btn-sm" onclick="switchNewProduct(${idx})" title="تغيير المنتج وتقفيل الحالي">🔄 تغيير المنتج</button>
+      </div>
+
+      <div class="slides-bar">
+        <div class="slides-title">
+          <span>📌 سلايتات المنتجات المحفوظة</span>
+          <span>${db.savedProducts.length} سلايت</span>
+        </div>
+        ${slidesHtml}
+      </div>
+
+      <div class="input-row">
+        <div class="field">
+          <label>إنتاج الساعة (بالتة)</label>
+          <input type="number" id="hr_${idx}" inputmode="numeric" placeholder="0"
+            value="${l.draftHr}" ${l.locked ? 'disabled' : ''} oninput="saveDraft(${idx})">
+          <div class="quick">
+            <button type="button" onclick="addVal(${idx}, 'hr', 1)" ${l.locked ? 'disabled' : ''}>+1</button>
+            <button type="button" onclick="addVal(${idx}, 'hr', 5)" ${l.locked ? 'disabled' : ''}>+5</button>
+            <button type="button" onclick="addVal(${idx}, 'hr', 10)" ${l.locked ? 'disabled' : ''}>+10</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>التالف / الفرز (HFI)</label>
+          <input type="number" id="hfi_${idx}" inputmode="numeric" placeholder="0"
+            value="${l.draftHfi}" ${l.locked ? 'disabled' : ''} oninput="saveDraft(${idx})">
+          <div class="quick">
+            <button type="button" onclick="addVal(${idx}, 'hfi', 1)" ${l.locked ? 'disabled' : ''}>+1</button>
+            <button type="button" onclick="addVal(${idx}, 'hfi', 2)" ${l.locked ? 'disabled' : ''}>+2</button>
+            <button type="button" onclick="addVal(${idx}, 'hfi', -1)" ${l.locked ? 'disabled' : ''}>-1</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="line-stats">
+        <div><span>آخر ساعة</span><b>${l.lastHr}</b></div>
+        <div><span>إجمالي الخط</span><b>${l.total}</b></div>
+        <div><span>الجيد</span><b style="color:var(--accent)">${lineGood}</b></div>
+        <div><span>HFI</span><b style="color:var(--danger)">${l.hfiPending || 0}</b></div>
+      </div>
+
+      ${hfiBox}
+
+      <div class="row-between">
+        <button type="button" class="btn btn-accent" style="flex:1" onclick="recordHour(${idx})" ${l.locked || !l.active ? 'disabled' : ''}>
+          ${l.locked ? '✅ تم تسجيل الساعة' : '➕ تسجيل إنتاج الساعة'}
+        </button>
+        ${l.locked ? `<button type="button" class="btn btn-dark" onclick="undoHour(${idx})">↩️ تراجع</button>` : ''}
+      </div>
+
+      ${prodCards ? `
+        <div class="products-breakdown">
+          <div class="breakdown-title">
+            <span>إنتاج كل منتج على ${lineTitle} (مستقل)</span>
+            <span>${prodEntries.length} منتج</span>
+          </div>
+          ${prodCards}
+        </div>
+      ` : ''}
+    </div>`;
+  }).join('');
+
+  updateTopBar();
+}
+
+function setSize(idx, s) {
+  const allowed = getSizesForLine(db.lines[idx].id || (idx + 1));
+  if (!allowed.includes(s)) return;
+  db.lines[idx].size = s;
+  save();
+  render();
+}
+
+function setProduct(idx, val) {
+  const clean = val.trim();
+  db.lines[idx].product = clean;
+  if (clean) {
+    saveProductSlide(clean);
+  }
+  save();
+  render();
+}
+
+function selectExistingProd(idx, name, size) {
+  if (db.lines[idx].locked) return;
+  const allowed = getSizesForLine(db.lines[idx].id || (idx + 1));
+  const key = getProdKey(name, size);
+  if (db.lines[idx].products && db.lines[idx].products[key]) {
+    db.lines[idx].products[key].closed = false;
+  }
+  db.lines[idx].product = name;
+  if (allowed.includes(size)) {
+    db.lines[idx].size = size;
+  }
+  saveProductSlide(name);
+  save();
+  render();
+}
+
+function switchNewProduct(idx) {
+  const l = db.lines[idx];
+  const oldProd = (l.product || '').trim();
+  const oldSize = l.size;
+  const oldKey = getProdKey(oldProd, oldSize);
+
+  if (oldProd && l.products && l.products[oldKey]) {
+    saveProductSlide(oldProd);
+    const pData = l.products[oldKey];
+    pData.closed = true;
+    const good = Math.max(0, (pData.total || 0) - (pData.hfiPending || 0));
+    l.productChanges = l.productChanges || [];
+    const existingIdx = l.productChanges.findIndex(c => c.name === pData.name && c.size === pData.size);
+    const closedEntry = {
+      name: pData.name,
+      size: pData.size,
+      total: pData.total || 0,
+      good: good,
+      hfiPending: pData.hfiPending || 0,
+      hfiReleased: pData.hfiReleased || 0
+    };
+    if (existingIdx >= 0) {
+      l.productChanges[existingIdx] = closedEntry;
+    } else {
+      l.productChanges.push(closedEntry);
+    }
+  }
+
+  l.locked = false;
+  l.lastHr = 0;
+  l.lastHfi = 0;
+  l.draftHr = '';
+  l.draftHfi = '';
+  l.product = '';
+
+  save();
+  render();
+  setTimeout(() => {
+    const inp = document.getElementById(`prod_${idx}`);
+    if (inp) inp.focus();
+  }, 50);
+}
+
+function toggleActive(idx) {
+  db.lines[idx].active = !db.lines[idx].active;
+  save();
+  render();
+}
+
+function saveDraft(idx) {
+  db.lines[idx].draftHr = document.getElementById(`hr_${idx}`).value;
+  db.lines[idx].draftHfi = document.getElementById(`hfi_${idx}`).value;
+  save();
+}
+
+function addVal(idx, type, delta) {
+  if (db.lines[idx].locked) return;
+  const el = document.getElementById(`${type}_${idx}`);
+  const current = parseInt(el.value, 10) || 0;
+  el.value = Math.max(0, current + delta);
+  saveDraft(idx);
+}
+
+function recordHour(idx) {
+  const l = db.lines[idx];
+  const prodInput = document.getElementById(`prod_${idx}`);
+  const prod = (prodInput ? prodInput.value : l.product).trim();
+
+  if (!prod) return alert('يرجى كتابة اسم المنتج أولاً');
+
+  const hr = parseInt(l.draftHr, 10) || 0;
+  const hfi = parseInt(l.draftHfi, 10) || 0;
+
+  if (hr <= 0 && hfi <= 0) return alert('أدخل كمية الإنتاج أولاً');
+  if (hfi > hr) return alert('كمية HFI لا يمكن أن تكون أكبر من إنتاج الساعة');
+
+  const key = getProdKey(prod, l.size);
+
+  l.product = prod;
+  l.total += hr;
+  l.hfiPending = (l.hfiPending || 0) + hfi;
+  l.lastHr = hr;
+  l.lastHfi = hfi;
+  l.lastKey = key;
+  l.locked = true;
+
+  if (!l.products[key]) {
+    l.products[key] = { name: prod, size: l.size, total: 0, hfiPending: 0, hfiReleased: 0, closed: false };
+  }
+  l.products[key].total += hr;
+  l.products[key].hfiPending = (l.products[key].hfiPending || 0) + hfi;
+  l.products[key].closed = false;
+
+  saveProductSlide(prod);
+
+  save();
+  render();
+}
+
+function applyHfiRelease(l, qty) {
+  const pending = l.hfiPending || 0;
+  const actualQty = Math.min(pending, Math.max(0, qty));
+  if (actualQty <= 0) return;
+
+  l.hfiPending = pending - actualQty;
+  l.hfiReleased = (l.hfiReleased || 0) + actualQty;
+
+  const activeKey = getProdKey(l.product, l.size);
+  let targetProd = l.products[activeKey] && (l.products[activeKey].hfiPending || 0) > 0
+    ? l.products[activeKey]
+    : Object.values(l.products || {}).find(p => (p.hfiPending || 0) > 0);
+
+  if (targetProd) {
+    const pQty = Math.min(actualQty, targetProd.hfiPending || 0);
+    targetProd.hfiPending -= pQty;
+    targetProd.hfiReleased = (targetProd.hfiReleased || 0) + pQty;
+  }
+
+  save();
+  render();
+}
+
+function releaseOneHfi(idx) {
+  const l = db.lines[idx];
+  if ((l.hfiPending || 0) <= 0) return;
+  applyHfiRelease(l, 1);
+}
+
+function releaseAllHfi(idx) {
+  const l = db.lines[idx];
+  if ((l.hfiPending || 0) <= 0) return;
+  applyHfiRelease(l, l.hfiPending);
+}
+
+function undoHour(idx) {
+  const l = db.lines[idx];
+  if (!l.locked) return;
+
+  l.total = Math.max(0, l.total - l.lastHr);
+  l.hfiPending = Math.max(0, (l.hfiPending || 0) - l.lastHfi);
+
+  const key = l.lastKey || getProdKey(l.product, l.size);
+  const p = l.products[key];
+  if (p) {
+    p.total = Math.max(0, p.total - l.lastHr);
+    p.hfiPending = Math.max(0, (p.hfiPending || 0) - l.lastHfi);
+    if (p.total === 0 && (p.hfiPending || 0) === 0 && (p.hfiReleased || 0) === 0) {
+      delete l.products[key];
+    }
+  }
+
+  l.locked = false;
+  l.lastHr = 0;
+  l.lastHfi = 0;
+  save();
+  render();
+}
+
+function startNextHour() {
+  db.lines.forEach(l => {
+    l.locked = false;
+    l.lastHr = 0;
+    l.lastHfi = 0;
+    l.draftHr = '';
+    l.draftHfi = '';
+  });
+  save();
+  render();
+}
+
+function formatLineBlock(l) {
+  const waLine = l.waLabel || `Line#${String(l.id).padStart(2, '0')}`;
+  const prodName = l.product || 'N/A';
+  const good = getLineGood(l);
+  const hfiStr = padHfi(l.hfiPending || 0);
+
+  let block = `*${waLine}* \n\n`;
+  block += `*${prodName} (${l.size})*\n\n`;
+  block += `* Pallets per hour =${l.lastHr}\n`;
+  block += `* Total pallets =${l.total}\n`;
+  block += `* Good pallets =${good}\n`;
+  block += `* HFI pallets = ${hfiStr}`;
+
+  if ((l.hfiReleased || 0) > 0) {
+    block += `\n* Released from HFI to Good = ${l.hfiReleased}`;
+  }
+
+  const changes = l.productChanges || [];
+  if (changes.length > 0) {
+    const changesTxt = changes.map(c =>
+      `Product Changed & Closed: ${c.name} (${c.size})  Total=${c.total} | Good=${c.good} | HFI=${padHfi(c.hfiPending || 0)}]`
+    ).join('\n');
+    block += `\n_____________________________\n${changesTxt}`;
+  }
+
+  return block;
+}
+
+function sendHourlyWA() {
+  const activeLines = db.lines.filter(l => l.locked || l.total > 0 || (l.hfiReleased || 0) > 0 || (l.productChanges && l.productChanges.length > 0));
+  if (!activeLines.length) return alert('لا يوجد إنتاج مسجل للإرسال');
+
+  const linesTxt = activeLines.map(l => formatLineBlock(l)).join('\n=========================\n');
+  const msg = `*Production Update*\n${db.team} Shift \n${db.period}\n\n${linesTxt}`;
+  window.location.href = 'https://wa.me/?text=' + encodeURIComponent(msg);
+}
+
+function openEndShift() {
+  const t = db.lines.reduce((a, l) => ({
+    total: a.total + (l.total || 0),
+    hfiPending: a.hfiPending + (l.hfiPending || 0),
+    hfiReleased: a.hfiReleased + (l.hfiReleased || 0),
+    good: a.good + getLineGood(l)
+  }), { total: 0, hfiPending: 0, hfiReleased: 0, good: 0 });
+
+  const details = db.lines.map(l => {
+    const prods = Object.values(l.products || {}).map(d => {
+      const statusTag = d.closed ? ' [Closed]' : '';
+      const good = Math.max(0, (d.total || 0) - (d.hfiPending || 0));
+      const relTag = (d.hfiReleased || 0) > 0 ? ` | Released=${d.hfiReleased}` : '';
+      return `  • ${d.name} (${d.size})${statusTag}: Total=${d.total} | Good=${good} | HFI=${padHfi(d.hfiPending || 0)}${relTag}`;
+    }).join('\n') || '  No production';
+
+    return `${formatLineBlock(l)}\n\n*Products Summary:*\n${prods}`;
+  }).join('\n=========================\n');
+
+  const report = `*END OF SHIFT REPORT*\n${db.team} Shift \n${db.period}\nDate: ${new Date().toLocaleDateString('en-GB')}\n\n${details}\n=========================\n*PLANT TOTAL*\nTotal=${t.total} | Good=${t.good} | HFI=${padHfi(t.hfiPending)} | Released=${t.hfiReleased}`;
+
+  document.getElementById('endReportText').value = report;
+  document.getElementById('endModal').style.display = 'flex';
+}
+
+function copyReport() {
+  const el = document.getElementById('endReportText');
+  el.select();
+  if (navigator.clipboard) navigator.clipboard.writeText(el.value).catch(() => {});
+  alert('تم نسخ التقرير');
+}
+
+function sendEndWA() {
+  const txt = document.getElementById('endReportText').value;
+  window.location.href = 'https://wa.me/?text=' + encodeURIComponent(txt);
+}
+
+function archiveAndReset() {
+  if (!confirm('سيتم حفظ التقرير في الأرشيف وتصفير جميع العدادات لبدء شيفت جديد. متابعة؟')) return;
+  const txt = document.getElementById('endReportText').value;
+  db.history.unshift({
+    title: `${db.team} (${db.period}) - ${new Date().toLocaleString('ar-EG')}`,
+    text: txt
+  });
+  if (db.history.length > 20) db.history.pop();
+  db.lines = db.lines.map((l, i) => createLine(i + 1));
+  save();
+  render();
+  closeModal('endModal');
+}
+
+function openHistory() {
+  const box = document.getElementById('historyContent');
+  if (!db.history.length) {
+    box.innerHTML = '<p style="color:var(--muted)">لا توجد تقارير محفوظة.</p>';
+  } else {
+    box.innerHTML = db.history.map(h => `
+      <div style="border-bottom:1px solid var(--line); padding:8px 0;">
+        <b style="color:var(--accent)">${h.title}</b>
+        <pre style="background:var(--input); padding:6px; border-radius:6px; white-space:pre-wrap; direction:ltr; font-size:11px;">${h.text}</pre>
+      </div>
+    `).join('');
+  }
+  document.getElementById('historyModal').style.display = 'flex';
+}
+
+function closeModal(id) {
+  document.getElementById(id).style.display = 'none';
+}
+
+render();
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+</script>
+
+</body>
+</html>
